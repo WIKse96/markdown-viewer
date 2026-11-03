@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Markdown Viewer
+GenericName=Przeglądarka i edytor Markdown
+Comment=Lekka aplikacja do czytania i edycji plików .md
+Exec=markdown-viewer %F
+Icon=markdown-viewer
+Terminal=false
+Categories=Office;TextEditor;Utility;
+MimeType=text/markdown;text/x-markdown;
+Keywords=markdown;md;podgląd;edytor;
+StartupWMClass=markdown-viewer

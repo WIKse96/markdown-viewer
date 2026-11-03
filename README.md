@@ -47,3 +47,16 @@ mac/make-icon.swift# generator ikony (swift mac/make-icon.swift <katalog.iconset
 web/               # UI: index.html, app.js, app.css, vendor/ (marked, turndown, DOMPurify, highlight.js)
 build.sh
 ```
+
+## Wersja na Ubuntu / Linux
+
+GTK3 + WebKitGTK (Python), ten sam interfejs webowy co na macOS. Skróty: `Ctrl` zamiast `⌘`.
+
+```bash
+sudo apt install python3-gi gir1.2-gtk-3.0 gir1.2-webkit2-4.0   # jednorazowo
+./linux/install.sh             # instalacja do ~/.local (bez sudo)
+./linux/install.sh --default   # dodatkowo domyślny program dla plików .md
+./linux/uninstall.sh           # odinstalowanie
+```
+
+Aktualizacja: `git pull && ./linux/install.sh`.
