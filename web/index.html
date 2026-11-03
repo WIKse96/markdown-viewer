@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'self' file:; style-src 'self' file: 'unsafe-inline'; img-src * file: data: blob:; media-src * file: data:; font-src 'self' file: data:; connect-src 'none'; frame-src 'none'; object-src 'none'">
+  <title>Markdown Viewer</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div id="app" class="mode-preview">
+    <header id="toolbar">
+      <div class="side">
+        <button id="btn-open" class="browser-only" title="Otwórz (⌘O)">Otwórz</button>
+        <span id="filename" class="browser-only"></span>
+        <span id="dirty" class="browser-only" title="Niezapisane zmiany">●</span>
+      </div>
+      <div class="seg" role="tablist">
+        <button data-mode="preview" title="Podgląd (⌘1)">Podgląd</button>
+        <button data-mode="split" title="Podział (⌘2)">Podział</button>
+        <button data-mode="code" title="Kod (⌘3)">Kod</button>
+      </div>
+      <div class="side right">
+        <button id="btn-edit" title="Edycja (⌘E)">✎ Edycja</button>
+        <button id="btn-save" class="browser-only" title="Zapisz (⌘S)">Zapisz</button>
+      </div>
+    </header>
+    <main id="panes">
+      <textarea id="source" spellcheck="false" readonly></textarea>
+      <div id="preview-wrap"><article id="preview" class="markdown-body"></article></div>
+    </main>
+    <input id="file-input" type="file" accept=".md,.markdown,.mdown,.mkd,.txt,text/markdown,text/plain" hidden>
+  </div>
+  <script src="vendor/marked.js"></script>
+  <script src="vendor/purify.min.js"></script>
+  <script src="vendor/turndown.js"></script>
+  <script src="vendor/turndown-plugin-gfm.js"></script>
+  <script src="vendor/highlight.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
