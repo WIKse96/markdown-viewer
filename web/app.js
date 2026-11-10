@@ -376,6 +376,58 @@
     });
   }
 
+  // ---------- in-page search (used by the Linux shell; macOS uses the system find bar) ----------
+
+  function clearFind() {
+    if (window.CSS && CSS.highlights) CSS.highlights.delete('find');
+    if (!source.readOnly || state.mode !== 'code') window.getSelection().removeAllRanges();
+  }
+
+  // Marks every match in the preview (black on yellow); the current one is the selection (black on orange).
+  function paintFind(q) {
+    if (!(window.CSS && CSS.highlights)) return;
+    CSS.highlights.delete('find');
+    if (!q) return;
+    const needle = q.toLowerCase();
+    const ranges = [];
+    const walker = document.createTreeWalker(preview, NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      const hay = n.data.toLowerCase();
+      for (let i = hay.indexOf(needle); i !== -1; i = hay.indexOf(needle, i + needle.length)) {
+        const r = new Range();
+        r.setStart(n, i);
+        r.setEnd(n, i + needle.length);
+        ranges.push(r);
+      }
+    }
+    if (ranges.length) CSS.highlights.set('find', new Highlight(...ranges));
+  }
+
+  function findText(q, backwards, fresh) {
+    if (!q) { clearFind(); return true; }
+    if (state.mode === 'code') {
+      const hay = source.value.toLowerCase();
+      const needle = q.toLowerCase();
+      let from = fresh ? source.selectionStart : (backwards ? source.selectionStart - 1 : source.selectionEnd);
+      let i = backwards ? hay.lastIndexOf(needle, from) : hay.indexOf(needle, from);
+      if (i === -1) i = backwards ? hay.lastIndexOf(needle) : hay.indexOf(needle);
+      if (i === -1) return false;
+      if (!fresh) source.focus({ preventScroll: true }); // an unfocused textarea hides its selection
+      source.setSelectionRange(i, i + needle.length);
+      const line = source.value.slice(0, i).split('\n').length - 1;
+      source.scrollTop = Math.max(0, line * parseFloat(getComputedStyle(source).lineHeight || 20) - source.clientHeight / 2);
+      return true;
+    }
+    paintFind(q);
+    const sel = window.getSelection();
+    if (fresh && sel.rangeCount) sel.collapseToStart();
+    else if (!sel.rangeCount) sel.removeAllRanges();
+    const found = window.find(q, false, !!backwards, true, false, false, false);
+    const el = sel.anchorNode && (sel.anchorNode.parentElement || sel.anchorNode);
+    if (found && el && el.scrollIntoView) el.scrollIntoView({ block: 'center' });
+    return found;
+  }
+
   // ---------- public API for the native shell ----------
 
   window.mdv = {
@@ -388,7 +440,8 @@
       if (base !== state.base) { state.base = base; render(); }
     },
     markClean,
-    setFinding: (on) => document.documentElement.classList.toggle('finding', on),
+    setFinding: (on) => { document.documentElement.classList.toggle('finding', on); if (!on) clearFind(); },
+    find: findText,
   };
 
   let savedMode = 'preview';

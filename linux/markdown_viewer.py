@@ -94,10 +94,10 @@ class Document(Gtk.ApplicationWindow):
         add(f, "Zakończ", "<Control>q", app.quit_all)
         e = top("Edycja")
         add(e, "Znajdź…", "<Control>f", self.show_search)
-        add(e, "Znajdź następne", "<Control>g", lambda: self.find.search_next())
-        add(e, "Znajdź poprzednie", "<Control><Shift>g", lambda: self.find.search_previous())
-        add(e, "Znajdź następne ", "F3", lambda: self.find.search_next())
-        add(e, "Znajdź poprzednie ", "<Shift>F3", lambda: self.find.search_previous())
+        add(e, "Znajdź następne", "<Control>g", lambda: self.do_find())
+        add(e, "Znajdź poprzednie", "<Control><Shift>g", lambda: self.do_find(back=True))
+        add(e, "Znajdź następne ", "F3", lambda: self.do_find())
+        add(e, "Znajdź poprzednie ", "<Shift>F3", lambda: self.do_find(back=True))
         v = top("Widok")
         add(v, "Podgląd", "<Control>1", lambda: self.js("mdv.setMode('preview')"))
         add(v, "Podział", "<Control>2", lambda: self.js("mdv.setMode('split')"))
@@ -111,21 +111,18 @@ class Document(Gtk.ApplicationWindow):
 
     # ---- search (Ctrl+F) ----
     def build_search(self):
-        self.find = self.web.get_find_controller()
-        self.find.connect("found-text", lambda *_: self.entry.get_style_context().remove_class("error"))
-        self.find.connect("failed-to-find-text", lambda *_: self.entry.get_style_context().add_class("error"))
         self.search_bar = Gtk.SearchBar()
         box = Gtk.Box(spacing=4)
         self.entry = Gtk.SearchEntry()
         self.entry.set_width_chars(32)
         self.entry.connect("search-changed", self.on_search_changed)
-        self.entry.connect("activate", lambda _e: self.find.search_next())
-        self.entry.connect("previous-match", lambda _e: self.find.search_previous())
-        self.entry.connect("next-match", lambda _e: self.find.search_next())
+        self.entry.connect("activate", lambda _e: self.do_find())
+        self.entry.connect("previous-match", lambda _e: self.do_find(back=True))
+        self.entry.connect("next-match", lambda _e: self.do_find())
         prev = Gtk.Button.new_from_icon_name("go-up-symbolic", Gtk.IconSize.BUTTON)
         nxt = Gtk.Button.new_from_icon_name("go-down-symbolic", Gtk.IconSize.BUTTON)
-        prev.connect("clicked", lambda _b: self.find.search_previous())
-        nxt.connect("clicked", lambda _b: self.find.search_next())
+        prev.connect("clicked", lambda _b: self.do_find(back=True))
+        nxt.connect("clicked", lambda _b: self.do_find())
         for w in (self.entry, prev, nxt):
             box.pack_start(w, False, False, 0)
         self.search_bar.add(box)
@@ -139,18 +136,28 @@ class Document(Gtk.ApplicationWindow):
         self.entry.select_region(0, -1)
         self.on_search_changed(self.entry)
 
+    def do_find(self, back=False, fresh=False):
+        text = self.entry.get_text()
+
+        def done(web, res, _):
+            try:
+                ok = web.run_javascript_finish(res).get_js_value().to_boolean()
+            except Exception:
+                ok = True
+            ctx = self.entry.get_style_context()
+            (ctx.remove_class if ok else ctx.add_class)("error")
+            if ok and not fresh and self.mode == "code":
+                self.web.grab_focus()
+
+        self.js("mdv.find(%s, %s, %s)" % (json.dumps(text), "true" if back else "false",
+                                          "true" if fresh else "false"), done)
+
     def on_search_changed(self, entry):
-        text = entry.get_text()
-        if text:
-            self.find.search(text, WebKit2.FindOptions.CASE_INSENSITIVE | WebKit2.FindOptions.WRAP_AROUND, 1000)
-        else:
-            self.find.search_finish()
-            entry.get_style_context().remove_class("error")
+        self.do_find(fresh=True)
 
     def on_search_mode(self, bar, _p):
         self.js("mdv.setFinding(%s)" % ("true" if bar.get_search_mode() else "false"))
         if not bar.get_search_mode():
-            self.find.search_finish()
             self.web.grab_focus()
 
     def zoom(self, d):

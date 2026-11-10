@@ -135,6 +135,6 @@ body { font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica 
 .hljs-emphasis { font-style: italic; }
 .hljs-strong { font-weight: 600; }
 
-/* Active in-page search (Ctrl/⌘+F): make the found text clearly visible. */
-html.finding ::selection { background: #ffd33d; color: #1f2328; }
-html.finding mark { background: #ffd33d; }
+/* Active in-page search (Linux shell): black text on yellow, the current match on orange. */
+html.finding ::highlight(find) { background-color: #ffd33d; color: #000; }
+html.finding ::selection { background: #ff9f1a; color: #000; }
