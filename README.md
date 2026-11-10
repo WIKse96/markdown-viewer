@@ -18,6 +18,7 @@ Lekka natywna aplikacja na macOS do czytania i edycji plików `.md` (Swift + WKW
 | `⌘1` / `⌘2` / `⌘3` | Podgląd / Podział / Kod |
 | `⌘E` | Włącz/wyłącz edycję |
 | `⌘S`, `⇧⌘S` | Zapisz, Zapisz jako |
+| `⌘F`, `⌘G` / `⇧⌘G` | Szukaj, następne / poprzednie trafienie |
 | `⌘+` / `⌘-` / `⌘0` | Powiększ / pomniejsz / reset |
 
 ## Budowanie i instalacja

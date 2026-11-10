@@ -56,6 +56,7 @@ class Document(Gtk.ApplicationWindow):
 
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         box.pack_start(self.build_menu(app), False, False, 0)
+        box.pack_start(self.build_search(), False, False, 0)
         box.pack_start(self.web, True, True, 0)
         self.add(box)
         self.connect("delete-event", self.on_close)
@@ -91,6 +92,12 @@ class Document(Gtk.ApplicationWindow):
         add(f, "Zapisz jako…", "<Control><Shift>s", self.save_as)
         add(f, "Zamknij", "<Control>w", self.close)
         add(f, "Zakończ", "<Control>q", app.quit_all)
+        e = top("Edycja")
+        add(e, "Znajdź…", "<Control>f", self.show_search)
+        add(e, "Znajdź następne", "<Control>g", lambda: self.find.search_next())
+        add(e, "Znajdź poprzednie", "<Control><Shift>g", lambda: self.find.search_previous())
+        add(e, "Znajdź następne ", "F3", lambda: self.find.search_next())
+        add(e, "Znajdź poprzednie ", "<Shift>F3", lambda: self.find.search_previous())
         v = top("Widok")
         add(v, "Podgląd", "<Control>1", lambda: self.js("mdv.setMode('preview')"))
         add(v, "Podział", "<Control>2", lambda: self.js("mdv.setMode('split')"))
@@ -101,6 +108,49 @@ class Document(Gtk.ApplicationWindow):
         add(v, "Pomniejsz", "<Control>minus", lambda: self.zoom(-0.1))
         add(v, "Rzeczywisty rozmiar", "<Control>0", lambda: self.web.set_zoom_level(1))
         return bar
+
+    # ---- search (Ctrl+F) ----
+    def build_search(self):
+        self.find = self.web.get_find_controller()
+        self.find.connect("found-text", lambda *_: self.entry.get_style_context().remove_class("error"))
+        self.find.connect("failed-to-find-text", lambda *_: self.entry.get_style_context().add_class("error"))
+        self.search_bar = Gtk.SearchBar()
+        box = Gtk.Box(spacing=4)
+        self.entry = Gtk.SearchEntry()
+        self.entry.set_width_chars(32)
+        self.entry.connect("search-changed", self.on_search_changed)
+        self.entry.connect("activate", lambda _e: self.find.search_next())
+        self.entry.connect("previous-match", lambda _e: self.find.search_previous())
+        self.entry.connect("next-match", lambda _e: self.find.search_next())
+        prev = Gtk.Button.new_from_icon_name("go-up-symbolic", Gtk.IconSize.BUTTON)
+        nxt = Gtk.Button.new_from_icon_name("go-down-symbolic", Gtk.IconSize.BUTTON)
+        prev.connect("clicked", lambda _b: self.find.search_previous())
+        nxt.connect("clicked", lambda _b: self.find.search_next())
+        for w in (self.entry, prev, nxt):
+            box.pack_start(w, False, False, 0)
+        self.search_bar.add(box)
+        self.search_bar.connect_entry(self.entry)
+        self.search_bar.connect("notify::search-mode-enabled", self.on_search_mode)
+        return self.search_bar
+
+    def show_search(self):
+        self.search_bar.set_search_mode(True)
+        self.entry.grab_focus()
+        self.entry.select_region(0, -1)
+        self.on_search_changed(self.entry)
+
+    def on_search_changed(self, entry):
+        text = entry.get_text()
+        if text:
+            self.find.search(text, WebKit2.FindOptions.CASE_INSENSITIVE | WebKit2.FindOptions.WRAP_AROUND, 1000)
+        else:
+            self.find.search_finish()
+            entry.get_style_context().remove_class("error")
+
+    def on_search_mode(self, bar, _p):
+        if not bar.get_search_mode():
+            self.find.search_finish()
+            self.web.grab_focus()
 
     def zoom(self, d):
         self.web.set_zoom_level(min(3, max(0.5, self.web.get_zoom_level() + d)))

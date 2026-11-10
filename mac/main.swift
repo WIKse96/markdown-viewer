@@ -190,6 +190,14 @@ private func item(_ title: String, _ action: Selector?, _ key: String = "",
     return item
 }
 
+// WKWebView answers the standard find bar; the action travels in the item's tag.
+private func finderItem(_ title: String, _ action: NSTextFinder.Action, _ key: String,
+                        _ modifiers: NSEvent.ModifierFlags = .command) -> NSMenuItem {
+    let it = item(title, #selector(NSResponder.performTextFinderAction(_:)), key, modifiers)
+    it.tag = action.rawValue
+    return it
+}
+
 private func submenu(_ title: String, _ items: [NSMenuItem]) -> NSMenuItem {
     let menu = NSMenu(title: title)
     items.forEach(menu.addItem)
@@ -242,6 +250,10 @@ private func buildMainMenu() -> NSMenu {
             item("Kopiuj", #selector(NSText.copy(_:)), "c"),
             item("Wklej", #selector(NSText.paste(_:)), "v"),
             item("Zaznacz wszystko", #selector(NSText.selectAll(_:)), "a"),
+            .separator(),
+            finderItem("Znajdź…", .showFindInterface, "f"),
+            finderItem("Znajdź następne", .nextMatch, "g"),
+            finderItem("Znajdź poprzednie", .previousMatch, "g", [.command, .shift]),
         ]),
         submenu("Widok", [
             item("Podgląd", #selector(MarkdownDocument.showPreview(_:)), "1"),
