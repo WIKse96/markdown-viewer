@@ -293,4 +293,7 @@ class App(Gtk.Application):
 
 
 if __name__ == "__main__":
+    GLib.set_prgname("markdown-viewer")
+    GLib.set_application_name("Markdown Viewer")
+    Gtk.Window.set_default_icon_name("markdown-viewer")
     sys.exit(App().run(sys.argv))

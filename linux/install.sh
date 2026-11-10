@@ -16,6 +16,10 @@ mkdir -p "$APPDIR" "$BINDIR" "$HOME/.local/share/applications" "$HOME/.local/sha
 rm -rf "$APPDIR/web"
 cp -R ../web "$APPDIR/web"
 install -m 755 markdown_viewer.py "$APPDIR/markdown_viewer.py"
+for n in 48 128 256; do
+    mkdir -p "$HOME/.local/share/icons/hicolor/${n}x${n}/apps"
+    install -m 644 markdown-viewer-$n.png "$HOME/.local/share/icons/hicolor/${n}x${n}/apps/markdown-viewer.png"
+done
 install -m 644 markdown-viewer.png "$HOME/.local/share/icons/hicolor/512x512/apps/markdown-viewer.png"
 printf '#!/bin/sh\nexec python3 "%s/markdown_viewer.py" "$@"\n' "$APPDIR" > "$BINDIR/markdown-viewer"
 chmod 755 "$BINDIR/markdown-viewer"
