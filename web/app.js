@@ -174,7 +174,42 @@
   }
 
   function syncCheckboxes() {
-    preview.querySelectorAll('input[type=checkbox]').forEach((cb) => { cb.disabled = !state.editing; });
+    preview.querySelectorAll('input[type=checkbox]').forEach((cb) => { cb.disabled = false; });
+  }
+
+  // Source lines holding task-list markers ("- [ ] item"), in document order, skipping fenced code and front matter.
+  function taskMarkers() {
+    const offset = state.frontMatter.length;
+    const found = [];
+    let fence = null;
+    let pos = offset;
+    for (const line of state.md.slice(offset).split('\n')) {
+      const f = line.match(/^\s*(?:>\s*)*(`{3,}|~{3,})/);
+      if (f) {
+        if (!fence) fence = f[1][0];
+        else if (f[1][0] === fence) fence = null;
+      } else if (!fence) {
+        const m = line.match(/^(\s*(?:>\s*)*(?:[-*+]|\d+[.)])\s+\[)([ xX])\]/);
+        if (m) found.push({ at: pos + m[1].length, checked: m[2] !== ' ' });
+      }
+      pos += line.length + 1;
+    }
+    return found;
+  }
+
+  // Toggles a checkbox from the read-only preview: the marker is rewritten in the markdown and the file saved.
+  function toggleTask(cb) {
+    const boxes = Array.from(preview.querySelectorAll('input[type=checkbox]'));
+    const markers = taskMarkers();
+    const marker = markers.length === boxes.length ? markers[boxes.indexOf(cb)] : null;
+    if (!marker) return false;
+    const mark = cb.checked ? 'x' : ' ';
+    state.md = state.md.slice(0, marker.at) + mark + state.md.slice(marker.at + 1);
+    source.value = state.md;
+    cb.toggleAttribute('checked', cb.checked);
+    markDirty();
+    post({ type: 'autosave' });
+    return true;
   }
 
   function load(text, name, base) {
@@ -230,6 +265,7 @@
 
   preview.addEventListener('change', (e) => {
     if (!e.target.matches('input[type=checkbox]')) return;
+    if (!state.editing && toggleTask(e.target)) return;
     e.target.toggleAttribute('checked', e.target.checked); // turndown reads serialized HTML, not the property
     preview.dispatchEvent(new Event('input'));
   });
@@ -352,6 +388,7 @@
       if (base !== state.base) { state.base = base; render(); }
     },
     markClean,
+    setFinding: (on) => document.documentElement.classList.toggle('finding', on),
   };
 
   let savedMode = 'preview';

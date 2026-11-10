@@ -5,6 +5,7 @@ Lekka natywna aplikacja na macOS do czytania i edycji plików `.md` (Swift + WKW
 ## Funkcje
 
 - **Podgląd** (domyślnie) w stylu GitHuba, jasny/ciemny motyw wg systemu, kolorowanie składni w blokach kodu, tabele, listy zadań, front matter.
+- **Checkboxy** list zadań (`- [ ]`) można zaznaczać i odznaczać już w podglądzie; stan jest od razu zapisywany do pliku.
 - **Kod** — surowy markdown; **Podział** — kod i podgląd obok siebie, odświeżany na żywo.
 - **Edycja** (`⌘E`) — włącza edycję zarówno w kodzie, jak i bezpośrednio w podglądzie (WYSIWYG). Zmiany z podglądu są konwertowane z powrotem do markdown.
 - Natywne okna dokumentów: `⌘S` / `⇧⌘S`, „Otwórz ostatnie", ostrzeżenie o niezapisanych zmianach, wiele okien.

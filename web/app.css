@@ -134,3 +134,7 @@ body { font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica 
 .hljs-deletion { color: var(--hl-keyword); }
 .hljs-emphasis { font-style: italic; }
 .hljs-strong { font-weight: 600; }
+
+/* Active in-page search (Ctrl/⌘+F): make the found text clearly visible. */
+html.finding ::selection { background: #ffd33d; color: #1f2328; }
+html.finding mark { background: #ffd33d; }

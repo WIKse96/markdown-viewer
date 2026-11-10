@@ -148,6 +148,7 @@ class Document(Gtk.ApplicationWindow):
             entry.get_style_context().remove_class("error")
 
     def on_search_mode(self, bar, _p):
+        self.js("mdv.setFinding(%s)" % ("true" if bar.get_search_mode() else "false"))
         if not bar.get_search_mode():
             self.find.search_finish()
             self.web.grab_focus()
@@ -194,6 +195,9 @@ class Document(Gtk.ApplicationWindow):
         elif t == "state":
             self.mode = body.get("mode", self.mode)
             self.editing = body.get("editing", self.editing)
+        elif t == "autosave":
+            if self.path:
+                self.save()
         elif t == "open":
             self.open_url(body.get("url", ""))
 

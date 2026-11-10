@@ -107,6 +107,8 @@ final class MarkdownDocument: NSDocument, WKScriptMessageHandler, WKNavigationDe
         case "state":
             mode = body["mode"] as? String ?? mode
             editing = body["editing"] as? Bool ?? editing
+        case "autosave":
+            if fileURL != nil { save(nil) }
         case "open":
             if let string = body["url"] as? String, let url = URL(string: string) { open(url) }
         default:
